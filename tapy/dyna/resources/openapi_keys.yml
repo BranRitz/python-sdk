@@ -1,0 +1,577 @@
+openapi: 3.0.1
+info:
+  title: TACC Keys API
+  description: API used to retrieve and update key credentials.
+  contact:
+    name: Julia Looney
+    email: jlooney@tacc.utexas.edu
+  version: 3.0.0
+externalDocs:
+  url: https://bitbucket.org/tacc-cic/keys-api/src/master/User-Documentation.md
+servers:
+- url: https://api.tacc.utexas.edu/keys/v2
+  description: Production using token.
+- url: https://keys.tacc.cloud/keys
+  description: Production using JWT.
+- url: http://keys-staging.tacc.cloud/keys
+  description: Staging.
+tags:
+- name: tags
+  description: Accessing and organizing keys via tags.
+- name: username
+  description: Accessing and organzing keys via username.
+- name: ID
+  description: Accessing and organzing keys via the keys ID.
+
+security:
+  - wso2jwtDevAuth: []
+  - nonce: []
+
+paths:
+  /:
+    get:
+     description: List all of the keys.
+     operationId: getAllKeys
+     responses:
+      200:
+        description: List of keys returned.
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/RespBasic'
+              properties:
+                result:
+                  $ref: '#/components/schemas/KeysRespArray'
+      400:
+        description: Input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+      401:
+        description: Not authorized.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+      500:
+        description: Server error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+  /{username}:
+    get:
+      tags:
+      - username
+      description: List all of the keys for a username.
+      operationId: getKeysByUsername
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: List of keys returned for a user.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespBasic'
+                properties:
+                  result:
+                    $ref: '#/components/schemas/KeysRespArray'
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        422:
+          description: Unprocessable entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+  /keys/delete/{id}:
+    delete:
+      tags:
+      - ID
+      description: Delete a key using the ID.
+      operationId: deleteKeyById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Key was successfully deleted.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespBasic'
+                properties:
+                  result:
+                    type: object
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        403:
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortErrorResp'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+  /{username}/history:
+    get:
+      tags:
+      - username
+      description: List all of the history for a key, AKA a list of the events for a key.
+      operationId: getHistoryByUsername
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: List of history/events returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserHistoryResp'
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespBasic'
+  /{username}/text:
+    get:
+      tags:
+      - username
+      description: Returns keys for a username in plain text format.
+      operationId: getKeysByUsernamePlainText
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Keys for a user are returned as a list in plain text format.
+          content:
+            text/plain:
+              schema:
+                type: string
+        400:
+          description: Input error.
+          content:
+            text/plain:
+              schema:
+                type: string
+        401:
+          description: Not authorized.
+          content:
+            text/plain:
+              schema:
+                type: string
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+  /id/{id}:
+    get:
+      tags:
+      - ID
+      description: Returns information for a key corresponding to a provided ID.
+      operationId: getKeyById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Information pertaining to a key corresponding with a provided ID is returned.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespBasic'
+                properties:
+                  result:
+                    $ref: '#/components/schemas/KeysResp'
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        404:
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortErrorResp'
+        405:
+          description: Method not allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+  /tag:
+    get:
+      tags:
+      - tag
+      description: Query keys by required tag, and optional tag value.
+      operationId: getKeysByTag
+      parameters:
+      - in: query
+        name: tag
+        schema:
+          type: string
+        required: true
+        description: The key portion of the tag key, value.
+      - in: query
+        name: value
+        schema:
+          type: string
+        required: false
+        description: The value portion of the tag key, value.
+      responses:
+        200:
+          description: A list of keys containing the specified tag, and value if provided, is returned.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/RespBasic'
+                properties:
+                  result:
+                    $ref: '#/components/schemas/KeysRespArray'
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+    post:
+      tags:
+      - tag
+      description: Adds a tag, and a value if provide, to a specified key.
+      operationId: createTagByKey
+      parameters:
+      - in: query
+        name: tag
+        schema:
+          type: string
+        required: true
+        description: The key portion of the tag key, value.
+      - in: query
+        name: value
+        schema:
+          type: string
+        required: false
+        description: The value portion of the tag key, value.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/RespBasic'
+              properties:
+    responses:
+      200:
+        description: List of keys returned for a user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+      400:
+        description: Input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+      401:
+        description: Not authorized.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+      500:
+        description: Server error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorRespBasic'
+  /tag/{tag}:
+    get:
+      tags:
+      - tag
+      description: Returns keys containing the specified tag.
+      operationId: getKeysByTag
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: A list of keys containing the specified tag is returned.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/RespBasic'
+                properties:
+                  result:
+                    $ref: '#/components/schemas/KeysRespArray'
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+  /tag/{tag}/{value}:
+    get:
+      tags:
+      - tag
+      description: Returns keys containing the specified tag and value.
+      operationId: getKeysByTagAndValue
+      parameters:
+      - name: tag
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: value
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: A list of keys containing the specified tag and value is returned.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/RespBasic'
+                properties:
+                  result:
+                    $ref: '#/components/schemas/KeysRespArray'
+        400:
+          description: Input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        401:
+          description: Not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRespBasic'
+
+components:
+  schemas:
+    RespBasic:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Version of the API
+        message:
+          type: string
+          description: Brief description of the response
+        status:
+          type: string
+          description: Whether the request was a success or failure.
+          enum: [success, failure]
+    ErrorRespBasic:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Version of the API
+        message:
+          type: string
+          description: Brief description of the response
+        status:
+          type: string
+          description: Whether the request was a success or failure.
+          enum: [success, failure]
+        result:
+          type: object
+    KeysResp:
+      type: object
+      properties:
+        id:
+          type: integer
+        key_value:
+          type: string
+        username:
+          type: string
+        tags:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+        tenant:
+          type: string
+          enum: [TACC_PROD]
+        created:
+          type: string
+          format: date-time
+    KeysRespArray:
+      type: array
+      items:
+        $ref: KeysResp
+    History:
+      type: object
+      properties:
+        key_id:
+          type: integer
+        key_value:
+          type: string
+        username:
+          type: string
+        tenant:
+          type: string
+          enum: ["TACC_PROD"]
+        timestamp:
+          type: string
+          format: date-time
+        action:
+          type: string
+    UserHistoryResp:
+      type: array
+      items:
+        $ref: '#/components/schemas/History'
+    ShortErrorResp:
+      type: object
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer
+  requestBodies:
+    CreateKeyforUserBody:
+      type: object
+      properties:
+        key_value:
+          type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+
+
+
+
+
+
+
+
+
+
+
+
+
