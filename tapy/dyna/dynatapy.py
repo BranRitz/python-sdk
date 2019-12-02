@@ -21,7 +21,8 @@ RESOURCES = ['actors',
              #'files', ## currently the files spec is missing operationId's for some of its operations.
              'sk',
              'tenants',
-             'tokens',]
+             'tokens',
+             'keys',]
 
 def _getspec(resource_name):
     """
