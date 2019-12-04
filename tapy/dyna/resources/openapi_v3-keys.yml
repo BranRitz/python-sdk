@@ -25,7 +25,6 @@ tags:
 
 security:
   - wso2jwtDevAuth: []
-  - nonce: []
 
 paths:
   /:
@@ -565,6 +564,11 @@ components:
             allOf:
               - $ref: '#/components/schemas/KeysRespArray'
 
+  securitySchemes:
+    wso2jwtDevAuth:
+      type: apiKey
+      in: header
+      name: X-JWT-Assertion-DEV
 
 
 
